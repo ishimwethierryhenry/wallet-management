@@ -3,9 +3,11 @@
 ## Project Overview
 This web application is designed to help users track and manage their financial transactions seamlessly across various accounts, such as bank accounts, mobile money, and cash. It also includes robust features for generating reports, setting and monitoring budgets, and categorizing expenses for better financial oversight. The application is built using **Spring Boot** and **Thymeleaf** for the frontend, with **PostgreSQL** as the database.
 
-##Applicant Name:ISHIMWE Thierry Henry
-##Number:0787496224
-##email:ishimwethierryhenry8@gmail.com
+Applicant Name:ISHIMWE Thierry Henry
+
+Number:0787496224
+
+email:ishimwethierryhenry8@gmail.com
 
 ---
 
