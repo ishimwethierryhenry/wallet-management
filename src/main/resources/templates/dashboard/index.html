@@ -1,0 +1,256 @@
+<!-- templates/dashboard/index.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard - Wallet Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+</head>
+<body class="bg-gray-100">
+<!-- Navigation Bar -->
+<nav class="bg-white shadow">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold">Wallet Management</h1>
+        <div class="space-x-4">
+            <a href="/dashboard" class="text-gray-600 hover:text-blue-500">Dashboard</a>
+            <a href="/accounts" class="text-gray-600 hover:text-blue-500">Accounts</a>
+            <a href="/transactions" class="text-gray-600 hover:text-blue-500">Transactions</a>
+            <a href="/login" class="text-gray-600 hover:text-blue-500">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Financial Dashboard</h1>
+
+    <!-- Account Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div th:each="account : ${accounts}" class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-2" th:text="${account.name}">Account Name</h3>
+            <p class="text-2xl font-bold" th:text="${#numbers.formatCurrency(account.balance)}">$0.00</p>
+            <p class="text-sm text-gray-500" th:text="${account.type}">Account Type</p>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Income vs Expenses</h3>
+            <canvas id="incomeExpensesChart"></canvas>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Category Distribution</h3>
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">Recent Transactions</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto">
+                <thead>
+                <tr class="bg-gray-50">
+                    <th class="px-6 py-3 text-left">Date</th>
+                    <th class="px-6 py-3 text-left">Description</th>
+                    <th class="px-6 py-3 text-left">Category</th>
+                    <th class="px-6 py-3 text-right">Amount</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="transaction : ${recentTransactions}" class="border-b">
+                    <td class="px-6 py-4" th:text="${#temporals.format(transaction.dateTime, 'dd/MM/yyyy')}">01/01/2024</td>
+                    <td class="px-6 py-4" th:text="${transaction.description}">Description</td>
+                    <td class="px-6 py-4" th:text="${transaction.category?.name}">Category</td>
+                    <td class="px-6 py-4 text-right" th:text="${#numbers.formatCurrency(transaction.amount)}"
+                        th:class="${transaction.type == T(com.wallet.model.Transaction.TransactionType).EXPENSE ? 'text-red-600' : 'text-green-600'}">
+                        $0.00
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- templates/dashboard/index.html script section -->
+<script th:inline="javascript">
+    // Chart.js implementations
+    const incomeExpensesChart = new Chart(
+        document.getElementById('incomeExpensesChart'),
+        {
+            type: 'bar',
+            data: {
+                labels: /*[[${chartLabels}]]*/ [],
+                datasets: [{
+                    label: 'Income',
+                    data: /*[[${incomeData}]]*/ [],
+                    backgroundColor: 'rgba(34, 197, 94, 0.5)',
+                    borderColor: 'rgb(34, 197, 94)',
+                    borderWidth: 1
+                },
+                    {
+                        label: 'Expenses',
+                        data: /*[[${expenseData}]]*/ [],
+                        backgroundColor: 'rgba(239, 68, 68, 0.5)',
+                        borderColor: 'rgb(239, 68, 68)',
+                        borderWidth: 1
+                    }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Income vs Expenses'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('en-US', {
+                                        style: 'currency',
+                                        currency: 'USD'
+                                    }).format(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value, index, values) {
+                                return new Intl.NumberFormat('en-US', {
+                                    style: 'currency',
+                                    currency: 'USD',
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                }).format(value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    );
+
+    const categoryChart = new Chart(
+        document.getElementById('categoryChart'),
+        {
+            type: 'doughnut',
+            data: {
+                labels: /*[[${categoryLabels}]]*/ [],
+                datasets: [{
+                    data: /*[[${categoryData}]]*/ [],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.8)',   // Blue
+                        'rgba(16, 185, 129, 0.8)',   // Green
+                        'rgba(249, 115, 22, 0.8)',   // Orange
+                        'rgba(139, 92, 246, 0.8)',   // Purple
+                        'rgba(236, 72, 153, 0.8)',   // Pink
+                        'rgba(245, 158, 11, 0.8)',   // Yellow
+                        'rgba(99, 102, 241, 0.8)',   // Indigo
+                        'rgba(14, 165, 233, 0.8)',   // Light Blue
+                        'rgba(168, 85, 247, 0.8)',   // Violet
+                        'rgba(239, 68, 68, 0.8)'     // Red
+                    ],
+                    borderColor: [
+                        'rgb(59, 130, 246)',
+                        'rgb(16, 185, 129)',
+                        'rgb(249, 115, 22)',
+                        'rgb(139, 92, 246)',
+                        'rgb(236, 72, 153)',
+                        'rgb(245, 158, 11)',
+                        'rgb(99, 102, 241)',
+                        'rgb(14, 165, 233)',
+                        'rgb(168, 85, 247)',
+                        'rgb(239, 68, 68)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            padding: 20
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Expenses by Category'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += new Intl.NumberFormat('en-US', {
+                                        style: 'currency',
+                                        currency: 'USD'
+                                    }).format(context.parsed);
+                                }
+                                const dataset = context.dataset;
+                                const total = dataset.data.reduce((acc, data) => acc + data, 0);
+                                const percentage = Math.round((context.parsed / total) * 100);
+                                return `${label} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                cutout: '60%',
+                animation: {
+                    animateScale: true,
+                    animateRotate: true
+                }
+            }
+        }
+    );
+
+    // Function to update charts dynamically
+    function updateCharts() {
+        fetch('/api/dashboard/chart-data')
+            .then(response => response.json())
+            .then(data => {
+                // Update Income vs Expenses chart
+                incomeExpensesChart.data.labels = data.chartLabels;
+                incomeExpensesChart.data.datasets[0].data = data.incomeData;
+                incomeExpensesChart.data.datasets[1].data = data.expenseData;
+                incomeExpensesChart.update();
+
+                // Update Category chart
+                categoryChart.data.labels = data.categoryLabels;
+                categoryChart.data.datasets[0].data = data.categoryData;
+                categoryChart.update();
+            })
+            .catch(error => console.error('Error updating charts:', error));
+    }
+
+    // Update charts every 5 minutes
+    setInterval(updateCharts, 300000);
+
+    // Add resize handler for responsive charts
+    window.addEventListener('resize', function() {
+        incomeExpensesChart.resize();
+        categoryChart.resize();
+    });
+</script>
+</body>
+</html>

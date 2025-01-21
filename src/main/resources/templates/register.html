@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register | Wallet Pro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 400px;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 0.5s ease forwards;
+        }
+
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        h2 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            opacity: 0;
+            transform: translateX(-10px);
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .form-group:nth-child(2) { animation-delay: 0.1s; }
+        .form-group:nth-child(3) { animation-delay: 0.2s; }
+        .form-group:nth-child(4) { animation-delay: 0.3s; }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        .input-icon {
+            position: relative;
+        }
+
+        .input-icon i {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #4a5568;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .login-link a:hover {
+            color: #5a67d8;
+        }
+
+        .strength-meter {
+            height: 4px;
+            background: #e2e8f0;
+            margin-top: 8px;
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .strength-meter::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .strength-meter[data-strength="weak"]::before {
+            width: 33.33%;
+            background: #fc8181;
+        }
+
+        .strength-meter[data-strength="medium"]::before {
+            width: 66.66%;
+            background: #f6e05e;
+        }
+
+        .strength-meter[data-strength="strong"]::before {
+            width: 100%;
+            background: #68d391;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Create Account</h2>
+
+    <form th:action="@{/register}" th:object="${user}" method="post">
+        <div class="form-group">
+            <label>Full Name</label>
+            <div class="input-icon">
+                <input type="text" th:field="*{name}" required placeholder="Enter your full name"/>
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <div class="input-icon">
+                <input type="email" th:field="*{email}" required placeholder="Enter your email"/>
+                <i class="fas fa-envelope"></i>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <div class="input-icon">
+                <input type="password" th:field="*{password}" required placeholder="Create a password" id="passwordField"/>
+                <i class="fas fa-eye" id="togglePassword"></i>
+            </div>
+            <div class="strength-meter" data-strength="weak"></div>
+        </div>
+        <button type="submit">Create Account</button>
+    </form>
+
+    <div class="login-link">
+        <p>Already have an account? <a th:href="@{/login}">Login here</a></p>
+    </div>
+</div>
+
+<script>
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordField = document.getElementById('passwordField');
+        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordField.setAttribute('type', type);
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+    });
+
+    // Password strength meter
+    document.getElementById('passwordField').addEventListener('input', function(e) {
+        const password = e.target.value;
+        const meter = document.querySelector('.strength-meter');
+
+        // Password strength checks
+        const hasLower = /[a-z]/.test(password);
+        const hasUpper = /[A-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasSpecial = /[!@#$%^&*]/.test(password);
+        const length = password.length;
+
+        let strength;
+        if (hasLower && hasUpper && hasNumber && hasSpecial && length >= 8) {
+            strength = 'strong';
+        } else if ((hasLower || hasUpper) && hasNumber && length >= 6) {
+            strength = 'medium';
+        } else if (length > 0) {
+            strength = 'weak';
+        } else {
+            strength = '';
+        }
+
+        meter.setAttribute('data-strength', strength);
+    });
+
+    // Form validation and animation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const inputs = this.querySelectorAll('input[required]');
+        let isValid = true;
+
+        inputs.forEach(input => {
+            if (!input.value) {
+                isValid = false;
+                input.classList.add('shake');
+                setTimeout(() => input.classList.remove('shake'), 500);
+            }
+        });
+
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+
+    // Input focus effects
+    document.querySelectorAll('.form-group input').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+
+        input.addEventListener('blur', function() {
+            if (!this.value) {
+                this.parentElement.classList.remove('focused');
+            }
+        });
+    });
+
+    // Add ripple effect to button
+    document.querySelector('button').addEventListener('click', function(e) {
+        const ripple = document.createElement('div');
+        ripple.classList.add('ripple');
+        this.appendChild(ripple);
+
+        const rect = this.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        ripple.style.left = `${x}px`;
+        ripple.style.top = `${y}px`;
+
+        setTimeout(() => ripple.remove(), 1000);
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!-- templates/fragments/pagination.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="pagination(page)" class="flex justify-center my-4">
+    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+        <!-- Previous Page -->
+        <a th:href="${page.first ? '#' : '@{''(page=${page.number - 1})''}'}"
+           th:class="${page.first ? 'cursor-not-allowed text-gray-400' : 'text-gray-500 hover:bg-gray-50'}"
+           class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium">
+            Previous
+        </a>
+
+        <!-- Page Numbers -->
+        <span th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+                <a th:href="@{''(page=${i})}"
+                   th:text="${i + 1}"
+                   th:class="${page.number == i ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'}"
+                   class="relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                </a>
+            </span>
+
+        <!-- Next Page -->
+        <a th:href="${page.last ? '#' : '@{''(page=${page.number + 1})''}'}"
+           th:class="${page.last ? 'cursor-not-allowed text-gray-400' : 'text-gray-500 hover:bg-gray-50'}"
+           class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium">
+            Next
+        </a>
+    </nav>
+</div>
+</body>
+</html>
