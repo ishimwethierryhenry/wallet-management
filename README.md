@@ -102,7 +102,7 @@ mvn package
 ---
 
 ## Deployment Link
-The application is hosted and accessible at: [Deployment Link](#)
+The application is hosted and accessible at: (http://ec2-13-60-50-63.eu-north-1.compute.amazonaws.com:3000/)(#)
 
 ---
 
